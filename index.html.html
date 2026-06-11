@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sınav Koçu Pro | Offline</title>
+<style>
+:root{
+  --bg:#f6f7fb;--card:#fff;--ink:#1f2937;--muted:#6b7280;--line:#e5e7eb;
+  --brand:#6366f1;--brand2:#8b5cf6;--ok:#16a34a;--warn:#f59e0b;--bad:#ef4444;
+  --soft:#eef2ff;--shadow:0 16px 42px rgba(31,41,55,.10);--r:22px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(135deg,#f8fbff,#f7f0ff);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+.app{display:grid;grid-template-columns:285px 1fr;min-height:100vh}
+.side{height:100vh;position:sticky;top:0;overflow:auto;background:rgba(255,255,255,.78);backdrop-filter:blur(18px);border-right:1px solid var(--line);padding:22px}
+.logo{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+.logo-mark{width:45px;height:45px;border-radius:16px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;display:grid;place-items:center;font-weight:900;box-shadow:var(--shadow)}
+.logo h1{font-size:18px;margin:0;line-height:1.1}.logo small{color:var(--muted)}
+.nav button{width:100%;border:0;background:transparent;text-align:left;padding:12px 14px;border-radius:15px;cursor:pointer;margin:2px 0;color:#374151}
+.nav button:hover,.nav button.active{background:var(--soft);color:#3730a3;font-weight:800}
+.main{padding:26px;max-width:1280px;width:100%;margin:0 auto}
+.hero,.card{background:rgba(255,255,255,.88);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:20px}
+.hero{margin-bottom:16px;background:linear-gradient(135deg,#fff,#f5f3ff)}
+h2{margin:0 0 8px;font-size:28px}h3{margin:0 0 12px}
+p,li{line-height:1.62}.muted{color:var(--muted)}.small{font-size:13px}
+.grid{display:grid;gap:16px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+select,input,textarea{width:100%;border:1px solid #d1d5db;border-radius:14px;background:#fff;padding:11px 12px;color:var(--ink)}
+textarea{min-height:150px;resize:vertical}
+.btn{border:0;border-radius:14px;padding:11px 14px;background:#111827;color:white;cursor:pointer;font-weight:800}
+.btn.primary{background:linear-gradient(135deg,var(--brand),var(--brand2))}
+.btn.ok{background:var(--ok)}.btn.warn{background:var(--warn)}.btn.bad{background:var(--bad)}
+.btn.light{background:var(--soft);color:#3730a3}.btn.ghost{background:#f3f4f6;color:#111827}
+.hidden{display:none!important}
+.pill{display:inline-block;background:var(--soft);color:#3730a3;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800;margin:2px}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi>div{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px}.kpi strong{font-size:25px;display:block}
+.progress{height:12px;border-radius:999px;background:#e5e7eb;overflow:hidden}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--brand2))}
+.qbox{background:#fff;border:1px solid var(--line);border-radius:18px;padding:15px;margin:12px 0}
+.option{display:block;border:1px solid #e5e7eb;border-radius:13px;padding:10px;margin:8px 0;cursor:pointer}
+.option input{width:auto;margin-right:8px}.answer{display:none;margin-top:10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:12px}
+.flash{min-height:170px;display:grid;place-items:center;text-align:center;border:1px dashed #c7d2fe;border-radius:18px;background:#f8faff;padding:20px;cursor:pointer;font-weight:800}
+.notebook{min-height:520px;border:1px solid #d1d5db;border-radius:18px;padding:20px;outline:0;background:#fff;line-height:28px}
+.lined{background-image:linear-gradient(#fff 27px,#dbeafe 28px);background-size:100% 28px}
+.gridpaper{background-image:linear-gradient(#e5e7eb 1px,transparent 1px),linear-gradient(90deg,#e5e7eb 1px,transparent 1px);background-size:24px 24px}
+.blank{background:#fff}
+.canvas-wrap{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff}
+canvas{display:block;width:100%;height:460px;background:#fff;touch-action:none}
+table{border-collapse:collapse;width:100%}th,td{border-bottom:1px solid var(--line);padding:10px;text-align:left;vertical-align:top}
+@media(max-width:900px){.app{grid-template-columns:1fr}.side{height:auto;position:relative}.g2,.g3,.kpi{grid-template-columns:1fr}}
+@media print{.side,.no-print,.btn{display:none!important}.app{display:block}.main{padding:0;max-width:none}.hero,.card{box-shadow:none;border:0}.hidden{display:block!important}body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side no-print">
+  <div class="logo"><div class="logo-mark">SK</div><div><h1>Sınav Koçu Pro</h1><small>Ayıklanmış tek dosya</small></div></div>
+  <div class="nav" id="nav"></div>
+  <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+  <p class="small muted">Offline çalışır. Veriler tarayıcıda saklanır. PDF için Ctrl+P → PDF olarak kaydet.</p>
+</aside>
+
+<main class="main">
+  <section class="hero">
+    <h2>Tekilleştirilmiş Sınav Çalışma Sistemi</h2>
+    <p>TYT, AYT, DGS, ALES, KPSS önlisans/lisans, MSÜ, EKPSS, YDS/YÖKDİL ve benzeri sınavlar için aynı konular tekrar edilmeden toplandı.</p>
+  </section>
+
+  <section id="dash" class="view">
+    <div class="kpi">
+      <div><span class="small muted">Tamamlanan konu</span><strong id="doneCount">0</strong></div>
+      <div><span class="small muted">Çözülen test</span><strong id="testCount">0</strong></div>
+      <div><span class="small muted">Doğru oranı</span><strong id="rate">%0</strong></div>
+      <div><span class="small muted">Günlük hedef</span><strong id="goalText">90 dk</strong></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3>Genel ilerleme</h3>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+      <p class="muted small">Konu tamamla, test çöz, not al; sistem ilerlemeni kaydetsin.</p>
+    </div>
+    <div class="grid g2" style="margin-top:16px">
+      <div class="card">
+        <h3>Bugünkü hızlı akış</h3>
+        <ol>
+          <li>Konu seç ve uzun anlatımı oku.</li>
+          <li>Özeti kendi cümlenle deftere yaz.</li>
+          <li>Ezber Lab’da aktif hatırlama yap.</li>
+          <li>Test oluştur, çözüm butonuyla yanlışını gör.</li>
+          <li>Formülü veya püf noktayı deftere ekle.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>Garanti takip mantığı</h3>
+        <p>Sınavı sihirli şekilde garanti edemeyiz kanka; ama bu sistem eksik konu bırakmamak, tekrar tarihlerini kurmak, yanlışları görmek ve çıktı almak için tasarlandı.</p>
+        <button class="btn primary" onclick="show('plan')">Plan oluştur</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="topics" class="view hidden">
+    <div class="card">
+      <h3>Konu anlatımı</h3>
+      <div class="grid g3">
+        <select id="topicSelect" onchange="renderTopic()"></select>
+        <button class="btn ok" onclick="markDone()">Konuyu tamamladım</button>
+        <button class="btn light" onclick="window.print()">PDF / çıktı al</button>
+      </div>
+    </div>
+    <div class="grid g2" style="margin-top:16px">
+      <div class="card">
+        <h3 id="topicTitle"></h3>
+        <div id="topicTags"></div>
+        <h3 style="margin-top:16px">Uzun anlatım</h3>
+        <p id="topicLong"></p>
+      </div>
+      <div class="card">
+        <h3>Özet alanı</h3>
+        <p id="topicSummary"></p>
+        <h3>Ezber / çalışma taktiği</h3>
+        <ul id="topicTips"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="memo" class="view hidden">
+    <div class="grid g2">
+      <div class="card">
+        <h3>Ezber Lab</h3>
+        <select id="memoSelect" onchange="newFlash()"></select>
+        <div id="flash" class="flash" onclick="flipFlash()">Kart için tıkla</div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn light" onclick="newFlash()">Yeni kart</button>
+          <button class="btn ok" onclick="saveReview()">Tekrar kaydet</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Hızlı öğrenme teknikleri</h3>
+        <ol>
+          <li><b>Aktif hatırlama:</b> Konuyu kapat, aklında kalanı yaz.</li>
+          <li><b>Feynman:</b> 10 yaşındaki birine anlatır gibi sadeleştir.</li>
+          <li><b>Aralıklı tekrar:</b> 1-3-7-14 gün döngüsü yap.</li>
+          <li><b>Yanlış defteri:</b> Yanlışın sebebini tek cümle yaz.</li>
+          <li><b>Mini test:</b> Konu bitince hemen 5 soru çöz.</li>
+        </ol>
+        <textarea id="recall" placeholder="Konuya bakmadan aklında kalanları yaz..."></textarea>
+        <button class="btn primary" onclick="saveRecall()">Hatırlama notunu kaydet</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="tests" class="view hidden">
+    <div class="card">
+      <h3>Test oluştur</h3>
+      <div class="grid g3">
+        <select id="testSelect"></select>
+        <select id="level"><option>Kolay</option><option>Orta</option><option>Zor</option></select>
+        <button class="btn primary" onclick="makeTest()">Test oluştur</button>
+      </div>
+    </div>
+    <div id="testArea"></div>
+  </section>
+
+  <section id="exam" class="view hidden">
+    <div class="card">
+      <h3>Sınav simülasyonu</h3>
+      <div class="grid g3">
+        <input type="number" id="minutes" value="30" min="5" />
+        <select id="examSelect"></select>
+        <button class="btn primary" onclick="startExam()">Sınavı başlat</button>
+      </div>
+      <h2 id="timer">00:00</h2>
+    </div>
+    <div id="examArea"></div>
+  </section>
+
+  <section id="notes" class="view hidden">
+    <div class="card no-print">
+      <h3>Defter</h3>
+      <div class="row">
+        <button class="btn light" onclick="setPaper('lined')">Çizgili</button>
+        <button class="btn light" onclick="setPaper('gridpaper')">Kareli</button>
+        <button class="btn light" onclick="setPaper('blank')">Boş</button>
+        <button class="btn ok" onclick="saveNote()">Kaydet</button>
+        <button class="btn ghost" onclick="window.print()">PDF / çıktı</button>
+      </div>
+    </div>
+    <div id="paper" class="notebook lined" contenteditable="true"></div>
+  </section>
+
+  <section id="hand" class="view hidden">
+    <div class="card no-print">
+      <h3>El yazısı / elle çözüm alanı</h3>
+      <div class="row">
+        <button class="btn light" onclick="pen=2">İnce</button>
+        <button class="btn light" onclick="pen=5">Orta</button>
+        <button class="btn light" onclick="pen=9">Kalın</button>
+        <button class="btn bad" onclick="clearCanvas()">Temizle</button>
+        <button class="btn ok" onclick="saveCanvas()">Kaydet</button>
+      </div>
+    </div>
+    <div class="canvas-wrap"><canvas id="canvas"></canvas></div>
+  </section>
+
+  <section id="formulas" class="view hidden">
+    <div class="grid g2">
+      <div class="card">
+        <h3>Formül defteri</h3>
+        <select id="formulaSelect" onchange="renderFormulas()"></select>
+        <div id="formulaArea"></div>
+      </div>
+      <div class="card">
+        <h3>Kendi formülünü ekle</h3>
+        <input id="fTitle" placeholder="Başlık">
+        <textarea id="fBody" placeholder="Formül / kısa not"></textarea>
+        <button class="btn primary" onclick="addFormula()">Kaydet</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="english" class="view hidden">
+    <div class="grid g2">
+      <div class="card">
+        <h3>İngilizce alanı</h3>
+        <p><b>Konu havuzu:</b> vocabulary, tense, modal, passive, relative clause, noun clause, adverbial clause, conjunctions, prepositions, phrasal verbs, cloze test, paragraph, translation, dialogue, situation questions.</p>
+        <textarea id="engNotes" placeholder="Kelime, gramer ve çeviri notlarını yaz..."></textarea>
+        <button class="btn ok" onclick="saveEnglish()">İngilizce notlarını kaydet</button>
+      </div>
+      <div class="card">
+        <h3>Mini İngilizce drill</h3>
+        <button class="btn light" onclick="engDrill()">Soru üret</button>
+        <div id="engArea"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="plan" class="view hidden">
+    <div class="card">
+      <h3>Çalışma planı oluşturucu</h3>
+      <div class="grid g3">
+        <input id="days" type="number" value="30" min="1" placeholder="Gün">
+        <input id="daily" type="number" value="90" min="15" placeholder="Günlük dakika">
+        <select id="target"><option>Genel karma</option><option>TYT/AYT</option><option>DGS</option><option>ALES</option><option>KPSS</option></select>
+      </div>
+      <button class="btn primary" style="margin-top:12px" onclick="makePlan()">Planı oluştur</button>
+    </div>
+    <div class="card" style="margin-top:16px"><h3>Plan</h3><div id="planArea"></div></div>
+  </section>
+
+  <section id="data" class="view hidden">
+    <div class="grid g2">
+      <div class="card">
+        <h3>Veri yönetimi</h3>
+        <p class="muted">Not, ilerleme, formül ve çalışma kayıtlarını yedekle.</p>
+        <div class="row">
+          <button class="btn ok" onclick="exportData()">Yedek indir</button>
+          <button class="btn bad" onclick="resetData()">Sıfırla</button>
+        </div>
+        <textarea id="backup" placeholder="Yedek JSON buraya gelir veya buraya yapıştırılır."></textarea>
+        <button class="btn primary" onclick="importData()">Yedeği yükle</button>
+      </div>
+      <div class="card">
+        <h3>GitHub / Vercel notu</h3>
+        <p>Dosya adını <b>index.html</b> olarak yükle. Repository ana dizinine koyarsan GitHub Pages ve Vercel daha rahat görür.</p>
+        <p>PDF almak için tarayıcıdan <b>Ctrl + P</b> → <b>PDF olarak kaydet</b>.</p>
+      </div>
+    </div>
+  </section>
+</main>
+</div>
+
+<script>
+const topics=[
+{id:'turkce',name:'Türkçe',tags:['TYT','DGS','ALES','KPSS','MSÜ','EKPSS'],summary:'Anlam bilgisi, paragraf, dil bilgisi ve okuduğunu anlama becerisidir.',long:'Türkçe sınavlarında amaç sadece kural ezberlemek değil; hızlı okuyup doğru anlam çıkarmaktır. Sözcükte anlam ve cümlede anlam temel yorum becerisini kurar. Paragraf soruları ana fikir, yardımcı fikir, çıkarım, yazarın tavrı ve düşünce akışı üzerinden gelir. Dil bilgisi tarafında sözcük türleri, fiilimsi, cümlenin ögeleri, anlatım bozukluğu, yazım ve noktalama çalışılır. DGS, ALES ve KPSS için paragraf düzenli çözülmelidir.',tips:['Her gün paragraf çöz.','Yanlışta nedenini yaz.','Dil bilgisini örnek cümleyle çalış.']},
+{id:'mat',name:'Matematik',tags:['TYT','DGS','ALES','KPSS','YÖS'],summary:'Sayı bilgisi, işlem hızı, problem çözme ve tablo yorumlama alanıdır.',long:'Matematik; temel kavramlar, sayılar, bölünebilme, EBOB-EKOK, rasyonel sayılar, eşitsizlik, mutlak değer, üslü-köklü sayılar, oran-orantı ve problemlerle başlar. Problemler okuduğunu anlama ile matematiği birleştirir. KPSS, ALES ve DGS’de hız; TYT’de işlem ve yorum birlikte önemlidir.',tips:['Temel kavramları bitir.','Problem tiplerini ayır.','Yanlışları konuya göre etiketle.']},
+{id:'ileri',name:'İleri Matematik',tags:['AYT','YÖS'],summary:'Fonksiyon, polinom, trigonometri, limit, türev ve integral alanıdır.',long:'İleri matematik AYT ağırlıklıdır. Fonksiyonlar matematiğin omurgasıdır. Polinom, ikinci derece denklem, parabol, trigonometri, logaritma, diziler, limit, süreklilik, türev ve integral birbirine bağlı ilerler. Grafik okuma ve cebirsel işlem birlikte gelişmelidir.',tips:['Grafik çizerek çalış.','Formül defteri tut.','Türev-integralde mantığı öğren.']},
+{id:'geo',name:'Geometri',tags:['TYT','AYT','DGS','ALES','KPSS','YÖS'],summary:'Açı, şekil, alan, benzerlik, analitik ve katı cisim becerisidir.',long:'Geometri görerek düşünme dersidir. Açılar, üçgenler, özel üçgenler, benzerlik, dörtgenler, çokgenler, çember, daire, analitik geometri ve katı cisimler çalışılır. En önemli beceri şekle veri yazmak ve yardımcı çizgi çekmektir.',tips:['Verilenleri şekle yaz.','Özel üçgenleri ezberle.','Yardımcı çizgi dene.']},
+{id:'sayisal',name:'Sayısal Mantık',tags:['DGS','ALES','YÖS','Kurum'],summary:'Sayı, şekil, tablo, kodlama ve koşul ilişkisi kurma becerisidir.',long:'Sayısal mantık klasik formülden çok ilişki yakalama dersidir. Sayı dizileri, şekil dizileri, tablo-grafik yorumlama, işlem tablosu, kodlama, şifreleme, sıralama ve eşleştirme soruları içerir. Düzenli tablo kurmak puan kazandırır.',tips:['Önce tablo kur.','Koşulları sembolleştir.','Seçenek ele.']},
+{id:'sozel',name:'Sözel Mantık',tags:['DGS','ALES','KPSS','TYT'],summary:'Öncüllerden kesin çıkarım yapma ve düzen kurma becerisidir.',long:'Sözel mantıkta kişi, yer, zaman, özellik ve sıra ilişkileri verilir. Oturma düzeni, grup oluşturma, tablo kurma, akrabalık ve kesin çıkarım soruları sık gelir. Kesin bilgi ile olasılığı ayırmak gerekir.',tips:['Mini tablo çiz.','Kesin ve belirsiz bilgiyi ayır.','Olmazları işaretle.']},
+{id:'tarih',name:'Tarih',tags:['TYT','AYT','KPSS','MSÜ'],summary:'Kronoloji, neden-sonuç, devletler, savaşlar, inkılaplar ve çağdaş tarihtir.',long:'Tarih; İslamiyet öncesi Türk tarihi, Türk-İslam devletleri, Osmanlı tarihi, ıslahatlar, savaşlar, Kurtuluş Savaşı, inkılaplar, Atatürk ilkeleri ve çağdaş Türk-dünya tarihi başlıklarından oluşur. Ezber kadar olaylar arasında bağ kurmak gerekir.',tips:['Kronoloji şeridi yap.','Olay-neden-sonuç yaz.','Antlaşmaları kartlaştır.']},
+{id:'cografya',name:'Coğrafya',tags:['TYT','AYT','KPSS','MSÜ'],summary:'Doğa, insan, Türkiye coğrafyası, ekonomi ve çevre yorumudur.',long:'Coğrafyada harita, konum, iklim, yer şekilleri, su kaynakları, nüfus, göç, yerleşme, tarım, sanayi, ulaşım, turizm, bölgeler, afetler ve çevre sorunları bulunur. Harita ve grafik okuma çok önemlidir.',tips:['Haritayla çalış.','Bölgeleri tablo yap.','İklim-sonuç ilişkisini öğren.']},
+{id:'vat',name:'Vatandaşlık ve Güncel',tags:['KPSS','EKPSS','Kurum'],summary:'Anayasa, devlet yapısı, temel haklar ve güncel bilgi alanıdır.',long:'Vatandaşlıkta hukuk kavramları, anayasa, temel haklar, yasama, yürütme, yargı, idare, demokrasi, seçimler, siyasi partiler ve güncel olaylar çalışılır. Kurumların görevleri karıştırılmamalıdır.',tips:['Kurum-görev kartı yap.','Güncel bilgiyi aylık güncelle.','Anayasayı şema çıkar.']},
+{id:'felsefe',name:'Felsefe Grubu',tags:['TYT','AYT'],summary:'Felsefe, mantık, psikoloji ve sosyoloji kavramlarıdır.',long:'Felsefe grubunda bilgi, varlık, ahlak, siyaset, din, bilim ve sanat felsefesi; mantık, psikoloji ve sosyoloji bulunur. Sorular kavram tanıma ve yorumlama şeklindedir.',tips:['Kavram sözlüğü yap.','Filozof-görüş eşleştir.','Anahtar kelime ara.']},
+{id:'din',name:'Din Kültürü / DHBT',tags:['TYT','DHBT'],summary:'İnanç, ibadet, ahlak, siyer, tefsir, hadis ve fıkıh alanıdır.',long:'Din kültürü inanç, ibadet, ahlak, Kur’an bilgisi, Hz. Muhammed’in hayatı ve İslam düşüncesinden oluşur. DHBT’de tefsir, hadis, fıkıh, akaid, kelam, siyer, hitabet ve Diyanet mevzuatı daha ayrıntılıdır.',tips:['Kavramları kart yap.','Siyeri kronolojik çalış.','Ayet yorumunda ana fikri bul.']},
+{id:'fizik',name:'Fizik',tags:['TYT','AYT','MSÜ'],summary:'Madde, hareket, kuvvet, enerji, elektrik, dalga, optik ve modern fiziktir.',long:'Fizik doğayı matematikle açıklar. TYT’de madde, hareket, kuvvet, enerji, ısı, basınç, elektrik, dalgalar ve optik; AYT’de vektör, momentum, tork, denge, elektrik-manyetizma, modern fizik ve atom fiziği derinleşir.',tips:['Birimleri yaz.','Formülün anlamını öğren.','Grafikte eksen oku.']},
+{id:'kimya',name:'Kimya',tags:['TYT','AYT','MSÜ'],summary:'Atom, bağ, mol, çözelti, denge, elektrokimya ve organik kimyadır.',long:'Kimya maddenin yapısını ve değişimini inceler. TYT’de atom, periyodik sistem, bağlar, mol, karışımlar, asit-baz-tuz; AYT’de gazlar, çözeltiler, tepkime enerjisi, hız, denge, elektrokimya ve organik kimya vardır.',tips:['Periyodik tabloyu iyi öğren.','Mol sorularını adım adım çöz.','Organikte fonksiyonel grup kartı yap.']},
+{id:'biyoloji',name:'Biyoloji',tags:['TYT','AYT','MSÜ'],summary:'Canlılık, hücre, kalıtım, ekoloji, sistemler ve biyoteknolojidir.',long:'Biyoloji canlıların yapısını ve işleyişini inceler. Hücre, organeller, sınıflandırma, mitoz, mayoz, kalıtım, ekoloji, insan fizyolojisi, DNA-RNA, protein sentezi, fotosentez, solunum, bitki biyolojisi ve evrim çalışılır.',tips:['Sistemleri şema çiz.','Kavramları karşılaştır.','Genetikte çaprazlama pratiği yap.']},
+{id:'edebiyat',name:'Edebiyat',tags:['AYT'],summary:'Şiir, söz sanatları, dönemler, sanatçılar ve metin türleridir.',long:'Edebiyat; şiir bilgisi, söz sanatları, nazım biçimleri, edebi akımlar, İslamiyet öncesi edebiyat, halk, divan, Tanzimat, Servetifünun, Fecriati, Milli Edebiyat, Cumhuriyet ve dünya edebiyatını kapsar. Dönem-sanatçı-eser ilişkisi çok önemlidir.',tips:['Dönemleri tablo yap.','Sanatçı-eser kartı çıkar.','Söz sanatlarına örnek yaz.']},
+{id:'ing',name:'Yabancı Dil',tags:['YDT','YDS','YÖKDİL'],summary:'Kelime, gramer, okuma, çeviri ve akademik metin anlama alanıdır.',long:'Dil sınavlarında kelime bilgisi, tense, modal, passive, relative clause, noun clause, bağlaçlar, preposition, phrasal verb, cloze test, paragraf, çeviri, diyalog ve durum soruları bulunur. En büyük puan okuma ve kelime gücünden gelir.',tips:['Günde 20 kelime öğren.','Paragraf çevirisi yap.','Bağlaçları tabloya dök.']},
+{id:'egitim',name:'Eğitim Bilimleri / ÖABT',tags:['KPSS Öğretmenlik'],summary:'Gelişim, öğrenme, öğretim yöntemleri, ölçme, rehberlik ve alan eğitimidir.',long:'Eğitim bilimleri; gelişim psikolojisi, öğrenme psikolojisi, öğretim ilke ve yöntemleri, program geliştirme, ölçme-değerlendirme, rehberlik, özel eğitim, sınıf yönetimi ve öğretim teknolojilerini içerir. ÖABT ise branşa göre alan bilgisidir.',tips:['Kuramcıları tablo yap.','Ölçmede formül çalış.','Kavram karıştırma listesi çıkar.']},
+{id:'alan',name:'KPSS Alan Bilgisi',tags:['KPSS A Grubu'],summary:'Hukuk, iktisat, maliye, muhasebe, işletme ve kamu yönetimi alanlarıdır.',long:'KPSS alan bilgisi kariyer meslekleri için önemlidir. Hukuk, iktisat, maliye, muhasebe, işletme, kamu yönetimi, uluslararası ilişkiler, çalışma ekonomisi ve istatistik derslerinden oluşur. Her ders kendi içinde temel kavram ve soru pratiği ister.',tips:['Alan derslerini günlere böl.','Kavram-defter sistemi kur.','Çıkmış soru analizi yap.']}
+];
+
+const formulas={
+mat:['Yüzde: Parça = Bütün x Oran / 100','Oran: a/b = c/d ise içler dışlar çarpımı yapılır','Hız: Yol = Hız x Zaman','İş: Toplam iş = İşçi hızı x Süre'],
+ileri:['Türev: f(x)=x^n ise f’(x)=n.x^(n-1)','Limitte süreklilik: lim f(x)=f(a)','İntegral: alan/birikim mantığıdır'],
+geo:['Üçgen alanı: taban x yükseklik / 2','Daire alanı: pi.r²','Çember çevresi: 2.pi.r','Dik üçgen: a²+b²=c²'],
+fizik:['Kuvvet: F=m.a','İş: W=F.x','Güç: P=W/t','Basınç: P=F/A'],
+kimya:['Mol: n=m/MA','Molarite: M=n/V','pH=-log[H+]','Verim %=gerçek/teorik x100'],
+biyoloji:['DNA eşlenmesi semikonservatiftir','Protein sentezi: DNA → RNA → Protein'],
+ing:['Present Simple: V1 / does-do','Passive: be + V3','Relative: who/which/that','Modal: can, could, may, might, must']
+};
+
+let state=JSON.parse(localStorage.getItem('skp_state')||'{"done":[],"tests":0,"correct":0,"total":0,"customFormulas":[],"reviews":[],"notes":""}');
+const views=[['dash','Panel'],['topics','Konular'],['memo','Ezber Lab'],['tests','Test oluştur'],['exam','Sınav modu'],['notes','Defter'],['hand','El yazısı'],['formulas','Formül defteri'],['english','İngilizce'],['plan','Plan'],['data','Veri']];
+const nav=document.getElementById('nav');
+views.forEach(v=>{let b=document.createElement('button');b.textContent=v[1];b.onclick=()=>show(v[0]);b.id='nav_'+v[0];nav.appendChild(b)});
+
+function save(){localStorage.setItem('skp_state',JSON.stringify(state));updateDash()}
+function fillSelects(){
+ ['topicSelect','memoSelect','testSelect','examSelect','formulaSelect'].forEach(id=>{
+  let s=document.getElementById(id); if(!s)return; s.innerHTML='';
+  topics.forEach(t=>{let o=document.createElement('option');o.value=t.id;o.textContent=t.name;s.appendChild(o)})
+ })
+}
+function show(id){document.querySelectorAll('.view').forEach(v=>v.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));document.getElementById('nav_'+id).classList.add('active'); if(id==='topics')renderTopic(); if(id==='memo')newFlash(); if(id==='formulas')renderFormulas(); if(id==='notes')document.getElementById('paper').innerHTML=state.notes||''; resizeCanvas();}
+function topic(id){return topics.find(t=>t.id===id)||topics[0]}
+function renderTopic(){let t=topic(document.getElementById('topicSelect').value);topicTitle.textContent=t.name;topicTags.innerHTML=t.tags.map(x=>'<span class="pill">'+x+'</span>').join('');topicLong.textContent=t.long;topicSummary.textContent=t.summary;topicTips.innerHTML=t.tips.map(x=>'<li>'+x+'</li>').join('')}
+function markDone(){let id=topicSelect.value;if(!state.done.includes(id))state.done.push(id);save();alert('Konu tamamlandı diye işaretlendi kanka.');}
+function updateDash(){doneCount.textContent=state.done.length;testCount.textContent=state.tests||0;let rate=state.total?Math.round(state.correct/state.total*100):0;document.getElementById('rate').textContent='%'+rate;bar.style.width=Math.min(100,Math.round(state.done.length/topics.length*100))+'%';}
+let flashSide=0,flashTopic=null;
+function newFlash(){flashTopic=topic(memoSelect.value);flashSide=0;flash.textContent=flashTopic.name+' için aktif hatırlama kartı: Konunun ana fikrini söylemek için tıkla.'}
+function flipFlash(){if(!flashTopic)newFlash();flashSide=1-flashSide;flash.textContent=flashSide?flashTopic.summary:'Bu konudan 3 anahtar kelimeyi ezberden yaz: '+flashTopic.name}
+function saveReview(){state.reviews.push({topic:memoSelect.value,date:new Date().toISOString()});save();alert('Tekrar kaydedildi. 1-3-7-14 gün döngüsüne göre tekrar et.')}
+function saveRecall(){state.recall=recall.value;save();alert('Hatırlama notu kaydedildi.')}
+function questionSet(t,lvl){
+ let base=[
+  {q:t.name+' konusunda ilk çalışılması gereken temel şey hangisidir?',opts:['Kavramı anlamak','Rastgele şık işaretlemek','Sadece ezber yapmak','Soruyu okumamak'],a:0,sol:'Önce kavram anlaşılır, sonra soru pratiği yapılır.'},
+  {q:t.name+' çalışırken en etkili tekrar yöntemi hangisidir?',opts:['Aktif hatırlama','Sadece altını çizme','Konuya hiç dönmeme','Uykusuz çalışmak'],a:0,sol:'Aktif hatırlama bilgiyi beyinden geri çağırdığı için daha kalıcıdır.'},
+  {q:t.name+' için yanlış defteri neden tutulur?',opts:['Yanlış sebebini görmek için','Sayfa dolsun diye','Sadece güzel görünsün diye','Süreyi boşa harcamak için'],a:0,sol:'Yanlışın sebebi yazılırsa aynı hata tekrar azalır.'},
+  {q:'Bir konuyu hızlı öğrenirken en iyi mini kapanış nedir?',opts:['Özet + 5 soru','Sadece video izlemek','Hiç soru çözmemek','Konu değiştirmek'],a:0,sol:'Özet ve hemen ardından mini test öğrenmeyi sabitler.'},
+  {q:'PDF/çıktı almak için en pratik yol hangisidir?',opts:['Ctrl+P ile PDF olarak kaydetmek','Ekranı kapatmak','Dosyayı silmek','Tarayıcıyı yenilemek'],a:0,sol:'Tarayıcı yazdırma ekranından PDF olarak kaydedebilirsin.'}
+ ];
+ if(lvl==='Orta')base[0].q=t.name+' konusunda özet çıkarırken en doğru yaklaşım hangisidir?';
+ if(lvl==='Zor')base[0].q=t.name+' konusunda bilgiyi kalıcı yapmak için en güçlü üçlü hangisidir?';
+ return base;
+}
+function makeTest(target='testArea',examMode=false){
+ let sel=examMode?examSelect.value:testSelect.value; let lvl=examMode?'Orta':level.value; let t=topic(sel); let qs=questionSet(t,lvl);
+ let html='<div class="card" style="margin-top:16px"><h3>'+t.name+' testi - '+lvl+'</h3>';
+ qs.forEach((q,i)=>{html+='<div class="qbox"><b>'+(i+1)+'. '+q.q+'</b>'+q.opts.map((o,j)=>'<label class="option"><input type="radio" name="'+target+i+'" value="'+j+'">'+o+'</label>').join('')+'<button class="btn light" onclick="showAns(this)">Çözüm</button><div class="answer"><b>Doğru cevap:</b> '+q.opts[q.a]+'<br>'+q.sol+'</div></div>'});
+ html+='<button class="btn ok" onclick="finishTest(\''+target+'\')">Testi bitir</button></div>';
+ document.getElementById(target).innerHTML=html;
+}
+function showAns(btn){btn.nextElementSibling.style.display='block'}
+function finishTest(area){let qs=document.querySelectorAll('#'+area+' .qbox');let correct=0,total=qs.length;qs.forEach((box,i)=>{let selected=box.querySelector('input:checked'); if(selected && Number(selected.value)===0)correct++;});state.tests++;state.correct+=correct;state.total+=total;save();alert('Sonuç: '+correct+'/'+total);}
+let timerInt=null;
+function startExam(){makeTest('examArea',true);let sec=Number(minutes.value)*60;clearInterval(timerInt);timerInt=setInterval(()=>{let m=String(Math.floor(sec/60)).padStart(2,'0'),s=String(sec%60).padStart(2,'0');timer.textContent=m+':'+s;if(sec--<=0){clearInterval(timerInt);alert('Süre bitti kanka.');}},1000)}
+function setPaper(cls){paper.className='notebook '+cls}
+function saveNote(){state.notes=paper.innerHTML;save();alert('Defter kaydedildi.')}
+let c,ctx,drawing=false,pen=4;
+function resizeCanvas(){c=document.getElementById('canvas'); if(!c)return; let data=c.toDataURL(); c.width=c.clientWidth*2;c.height=460*2;ctx=c.getContext('2d');ctx.lineCap='round';ctx.strokeStyle='#111827';ctx.lineWidth=pen*2;let img=new Image();img.onload=()=>ctx.drawImage(img,0,0);img.src=data;}
+function pos(e){let r=c.getBoundingClientRect();let p=e.touches?e.touches[0]:e;return{x:(p.clientX-r.left)*2,y:(p.clientY-r.top)*2}}
+function clearCanvas(){ctx.clearRect(0,0,c.width,c.height)}
+function saveCanvas(){state.canvas=c.toDataURL();save();alert('El yazısı alanı kaydedildi.')}
+window.addEventListener('resize',resizeCanvas);
+setTimeout(()=>{resizeCanvas(); if(state.canvas){let img=new Image();img.onload=()=>ctx.drawImage(img,0,0);img.src=state.canvas}},200);
+document.addEventListener('pointerdown',e=>{if(e.target&&e.target.id==='canvas'){drawing=true;ctx.beginPath();let p=pos(e);ctx.moveTo(p.x,p.y)}});
+document.addEventListener('pointermove',e=>{if(drawing&&e.target&&e.target.id==='canvas'){let p=pos(e);ctx.lineWidth=pen*2;ctx.lineTo(p.x,p.y);ctx.stroke()}});
+document.addEventListener('pointerup',()=>drawing=false);
+function renderFormulas(){
+ let id=formulaSelect.value; let list=[...(formulas[id]||['Bu alan için kendi formül/notlarını ekleyebilirsin.']),...state.customFormulas.filter(f=>f.topic===id).map(f=>f.title+': '+f.body)];
+ formulaArea.innerHTML=list.map(x=>'<div class="qbox">'+x+'</div>').join('');
+}
+function addFormula(){state.customFormulas.push({topic:formulaSelect.value,title:fTitle.value||'Not',body:fBody.value||''});fTitle.value='';fBody.value='';save();renderFormulas();}
+function saveEnglish(){state.english=engNotes.value;save();alert('İngilizce notları kaydedildi.')}
+function engDrill(){engArea.innerHTML='<div class="qbox"><b>Choose the correct option:</b><br>She ____ to school every day.<label class="option"><input name="eng" type="radio">go</label><label class="option"><input name="eng" type="radio">goes</label><label class="option"><input name="eng" type="radio">going</label><button class="btn light" onclick="showAns(this)">Çözüm</button><div class="answer">Doğru cevap: <b>goes</b>. Present Simple, üçüncü tekil şahısta fiile -s gelir.</div></div>'}
+function makePlan(){
+ let d=Number(days.value), mins=Number(daily.value), rows='', order=topics.map(t=>t.name);
+ for(let i=1;i<=d;i++){let a=order[(i-1)%order.length], b=order[i%order.length]; rows+='<tr><td>Gün '+i+'</td><td>'+a+' konu anlatımı</td><td>'+b+' test + yanlış analizi</td><td>'+mins+' dk</td></tr>'}
+ planArea.innerHTML='<table><tr><th>Gün</th><th>Konu</th><th>Pekiştirme</th><th>Süre</th></tr>'+rows+'</table>';
+ goalText.textContent=mins+' dk'; save();
+}
+function exportData(){let data=JSON.stringify(state,null,2);backup.value=data;let blob=new Blob([data],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sinav-kocu-yedek.json';a.click();}
+function importData(){try{state=JSON.parse(backup.value);save();alert('Yedek yüklendi.');}catch(e){alert('Yedek okunamadı. JSON formatını kontrol et.')}}
+function resetData(){if(confirm('Tüm veriler silinsin mi?')){localStorage.removeItem('skp_state');location.reload()}}
+fillSelects(); updateDash(); show('dash'); if(state.english)engNotes.value=state.english;
+</script>
+</body>
+</html>
